@@ -1,7 +1,3 @@
-import { execSync } from 'child_process'
-import { writeFileSync, unlinkSync } from 'fs'
-import { join } from 'path'
-
 export interface TranscriptionResult {
   text: string
   duration: number
@@ -9,63 +5,67 @@ export interface TranscriptionResult {
 }
 
 export async function transcribeAudio(audioBuffer: Buffer, filename: string = 'audio.mp3'): Promise<TranscriptionResult> {
-  const tempDir = join(process.cwd(), '.transcribe-temp')
-  const tempFile = join(tempDir, filename)
+  if (!process.env.NVIDIA_API_KEY) {
+    throw new Error('NVIDIA_API_KEY environment variable not set')
+  }
 
   try {
-    // Ensure temp directory exists
-    try {
-      require('fs').mkdirSync(tempDir, { recursive: true })
-    } catch {}
+    console.log(`[Transcribe] Starting transcription for ${filename}`)
 
-    // Write audio buffer to temp file
-    writeFileSync(tempFile, audioBuffer)
+    // Create FormData with audio file
+    const formData = new FormData()
+    const blob = new Blob([audioBuffer], { type: 'audio/mpeg' })
+    formData.append('audio', blob, filename)
 
-    console.log(`Transcribing ${filename}...`)
+    // Call NVIDIA NIM API
+    const response = await fetch(
+      'https://ai.api.nvidia.com/v1/asr/nvidia/parakeet-ctc-1.1b-asr',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NVIDIA_API_KEY}`,
+        },
+        body: formData,
+      }
+    )
 
-    // Call Python transcription script
-    const pythonScript = join(process.cwd(), 'transcribe.py')
-
-    console.log(`[Transcribe] Starting Python script for ${filename}`)
-
-    let output: string
-    try {
-      output = execSync(`python "${pythonScript}" "${tempFile}" tiny 3`, {
-        encoding: 'utf-8',
-        timeout: 900000, // 15 minute timeout for first model download
-        stdio: ['pipe', 'pipe', 'pipe'],
-        maxBuffer: 50 * 1024 * 1024, // 50MB buffer
-      })
-      console.log(`[Transcribe] Python script completed`)
-    } catch (execError: any) {
-      console.error(`[Transcribe] Python script error:`, execError.message)
-      throw new Error(`Python execution failed: ${execError.message}`)
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`)
     }
 
-    const result = JSON.parse(output)
+    const data = await response.json() as any
 
-    if (result.error) {
-      throw new Error(result.error)
+    // Handle NVIDIA API response format
+    let transcribedText = ''
+    let duration = 0
+
+    if (data.result?.transcripts?.[0]?.transcript) {
+      transcribedText = data.result.transcripts[0].transcript
+      duration = data.result?.metadata?.duration || 0
+    } else if (data.transcript) {
+      transcribedText = data.transcript
+      duration = data.duration || 0
+    } else if (typeof data === 'string') {
+      transcribedText = data
     }
 
-    if (!result.text) {
-      throw new Error('No transcription text received')
+    if (!transcribedText) {
+      throw new Error('No transcription text received from API')
     }
+
+    console.log(`[Transcribe] Transcription completed for ${filename}`)
 
     return {
-      text: result.text,
-      duration: Math.round(result.duration_seconds || 0),
-      language: result.language || 'en',
+      text: transcribedText.trim(),
+      duration: Math.round(duration),
+      language: 'en',
     }
   } catch (error) {
     if (error instanceof Error) {
+      console.error(`[Transcribe] Error: ${error.message}`)
       throw new Error(`Transcription failed: ${error.message}`)
     }
     throw new Error('Transcription failed: Unknown error')
-  } finally {
-    // Clean up temp file
-    try {
-      unlinkSync(tempFile)
-    } catch {}
   }
 }

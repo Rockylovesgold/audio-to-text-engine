@@ -2,46 +2,43 @@
 
 ## Quick Start (Recommended)
 
-### Option 1: Automatic Setup (Windows)
+### Local Development
 
 1. **Extract the ZIP file** to your desired location
-2. **Double-click `SETUP.bat`** - This will automatically:
-   - Check for Node.js and Python installation
-   - Install all npm dependencies
-   - Install Python voice transcription libraries
-   - Create necessary configuration files
-3. **Wait for setup to complete** (takes 2-3 minutes)
-4. **Double-click `START.bat`** to launch the application
-5. **Open your browser** to `http://localhost:4000`
-
-### Option 2: Manual Setup (Any OS)
-
-1. **Extract the ZIP file**
 2. **Install Node.js 18+** from https://nodejs.org/
-3. **Install Python 3.8+** from https://www.python.org/
-4. **Open terminal/command prompt in the project directory**
-5. **Run these commands:**
+3. **Open terminal/command prompt in the project directory**
+4. **Run these commands:**
    ```bash
    npm install
-   python -m pip install faster-whisper
    npm run dev
    ```
-6. **Open your browser** to `http://localhost:4000`
+5. **Open your browser** to `http://localhost:4000`
+
+### Cloud Deployment (Vercel)
+
+This version is optimized for Vercel serverless deployment:
+
+1. **Push to GitHub** (connect your repository)
+2. **Add to Vercel** via https://vercel.com
+3. **Set environment variable** in Vercel dashboard:
+   - Name: `NVIDIA_API_KEY`
+   - Value: Your NVIDIA API key from https://build.nvidia.com
+4. **Deploy** - Vercel automatically builds and deploys
 
 ---
 
 ## Requirements
 
-### System Requirements
-- **Windows 10/11** (or Linux/Mac with Node.js)
-- **4GB+ RAM** (for Whisper model)
+### Local Development
 - **Node.js 18+** ([Download](https://nodejs.org/))
-- **Python 3.8+** ([Download](https://www.python.org/))
-- **Disk Space**: ~500MB for models
+- **Any modern OS** (Windows, macOS, Linux)
+- **4GB+ RAM**
+- **Modern web browser** (Chrome, Edge, Firefox, Safari)
 
-### Browser Support
-- Chrome/Edge/Firefox (latest versions)
-- Requires JavaScript enabled
+### Vercel Deployment
+- **NVIDIA API Key** (free tier available at https://build.nvidia.com)
+- **GitHub account** (to connect your repository)
+- **Vercel account** (free tier available at https://vercel.com)
 
 ---
 
@@ -49,13 +46,22 @@
 
 ### Environment Variables
 
-The `.env.local` file contains configuration. Update it if needed:
+The `.env.local` file contains configuration:
 
 ```env
-NVIDIA_API_KEY=your_key_here
+NVIDIA_API_KEY=your_nvidia_api_key_here
+NODE_ENV=development
 ```
 
-**Note:** The current setup uses local Whisper for transcription, so you don't need an API key unless you modify the code to use NVIDIA endpoints.
+**Getting an API Key:**
+1. Visit https://build.nvidia.com
+2. Sign up for a free account
+3. Create a new API key
+4. Copy the key to `.env.local`
+
+**For Vercel Deployment:**
+- Do NOT commit `.env.local` to GitHub
+- Add the key via Vercel dashboard: Settings → Environment Variables
 
 ---
 
@@ -95,31 +101,30 @@ npm run dev
 - Restart your terminal/command prompt after installation
 - Verify with: `node --version`
 
-### "Python not found"
-- Install Python from https://www.python.org/
-- **Important:** Check "Add Python to PATH" during installation
-- Restart your terminal after installation
-- Verify with: `python --version`
+### "npm install fails"
+1. Delete `node_modules` folder
+2. Delete `package-lock.json`
+3. Run `npm install` again
 
-### "Port 4000 already in use"
+### "API Key not found" (Vercel)
+1. Add `NVIDIA_API_KEY` to Vercel environment variables
+2. Select all environments (Development, Preview, Production)
+3. Redeploy the application
+
+### "Port 4000 already in use" (Local)
 The application tries ports 4000-4010. If all are in use:
 1. Close other applications using these ports
-2. Or modify package.json: change `"next dev"` to `"next dev -p 5000"`
+2. Or run: `npm run dev -- -p 5000`
 
-### "Transcription taking too long"
-- First transcription downloads the AI model (~500MB) - this is normal
-- Subsequent transcriptions are much faster
-- Model is cached locally for speed
-
-### "Out of memory errors"
-- Close other applications
-- The Whisper model requires significant memory
-- Ensure you have at least 4GB free RAM
+### "Transcription fails" 
+1. Verify NVIDIA_API_KEY is set correctly
+2. Check API key has sufficient quota at https://build.nvidia.com
+3. Check internet connection (cloud API requires connectivity)
 
 ### Application won't start
 1. Delete the `.next` folder
-2. Run SETUP.bat again
-3. Then run START.bat
+2. Run `npm install`
+3. Run `npm run dev`
 
 ---
 
@@ -127,36 +132,42 @@ The application tries ports 4000-4010. If all are in use:
 
 ```
 rockmount-voice-engine/
-├── SETUP.bat                 # Run this first (Windows)
-├── START.bat                 # Run this to launch app (Windows)
 ├── package.json              # Project dependencies
 ├── app/                      # Next.js application code
 │   ├── page.tsx             # Main dashboard
 │   ├── layout.tsx           # Root layout
 │   ├── globals.css          # Styles
 │   └── api/                 # Backend API routes
-├── components/              # React components
-├── lib/                      # Utility functions
+│       ├── transcribe/route.ts    # Single file transcription
+│       ├── batch-transcribe/      # Batch processing
+│       └── history/               # History management
+├── components/              # React UI components
+├── lib/                      # Utility functions & API client
 ├── public/                   # Static files
-├── transcribe.py            # Python transcription script
-├── .env.local               # Configuration (keep secret)
-└── data/                    # Local history storage
+├── .env.local               # Configuration (local only, in .gitignore)
+└── .env.example             # Template for .env.local
 ```
 
 ---
 
-## Moving to Another Computer
+## Using on Another Computer
 
-To use this setup on another computer:
+For local development on another computer:
 
-1. **Copy the entire folder** (without node_modules)
+1. **Copy the project folder** (without `node_modules`)
 2. **Ensure the new computer has:**
    - Node.js 18+
-   - Python 3.8+
-3. **Double-click SETUP.bat** - it will reinstall everything
-4. **Double-click START.bat** to launch
+3. **Copy `.env.local`** with your NVIDIA API key
+4. **Run:**
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-The `.env.local` file will be preserved and settings will work on the new computer.
+For Vercel deployment, you only need:
+1. **Push to GitHub**
+2. **Connect to Vercel**
+3. **Add API key in Vercel dashboard**
 
 ---
 
@@ -175,8 +186,10 @@ The `.env.local` file will be preserved and settings will work on the new comput
 
 ## Support & Resources
 
+- **NVIDIA Build:** https://build.nvidia.com (API keys)
+- **NVIDIA NIM Documentation:** https://docs.nvidia.com/nim/
+- **Vercel Deployment:** https://vercel.com/docs
 - **Next.js Documentation:** https://nextjs.org/docs
-- **Faster-Whisper:** https://github.com/SYSTRAN/faster-whisper
 - **Node.js Help:** https://nodejs.org/en/docs/
 
 ---

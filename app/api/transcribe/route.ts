@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       text,
       wordCount,
       durationSec,
-      model: 'Whisper Base',
+      model: 'NVIDIA Parakeet',
     })
 
     return NextResponse.json(record)

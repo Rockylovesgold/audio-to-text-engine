@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
           text,
           wordCount,
           durationSec,
-          model: 'Whisper Base',
+          model: 'NVIDIA Parakeet',
         })
 
         results.push(record)
