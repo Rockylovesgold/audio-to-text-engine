@@ -1,0 +1,250 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║         RockMount Voice Engine - Pre-Setup Checklist (Mac/Linux)     ║
+║              Complete this BEFORE running setup.sh                   ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+SYSTEM REQUIREMENTS
+═════════════════════════════════════════════════════════════════════
+
+Required:
+  ☐ macOS 10.13+ OR Linux (Ubuntu 18.04+, Fedora 28+, etc.)
+  ☐ 4GB RAM minimum
+  ☐ 500MB free disk space
+  ☐ Internet connection (for first-time setup)
+
+Optional but recommended:
+  ☐ Modern browser (Chrome, Safari, Firefox - latest version)
+  ☐ Terminal familiarity (you'll run 2 commands)
+
+═════════════════════════════════════════════════════════════════════
+
+STEP 1: INSTALL NODE.JS
+═════════════════════════════════════════════════════════════════════
+
+Node.js includes npm (package manager).
+
+Option A: Using Official Installer (Recommended)
+  ☐ Visit: https://nodejs.org/
+  ☐ Download LTS version (not current)
+  ☐ Run the installer
+  ☐ Follow on-screen instructions
+  ☐ Restart Terminal after installation
+
+Option B: Using Homebrew (Mac only)
+  ☐ Install Homebrew if not already installed:
+     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  ☐ Run: brew install node
+  ☐ Restart Terminal
+
+Verify installation:
+  ☐ Open Terminal
+  ☐ Run: node --version
+  ☐ Should show v18+ (e.g., v20.10.0)
+  ☐ Run: npm --version
+  ☐ Should show 9+ (e.g., 9.8.0)
+
+═════════════════════════════════════════════════════════════════════
+
+STEP 2: INSTALL PYTHON 3
+═════════════════════════════════════════════════════════════════════
+
+Python is needed for the Whisper transcription engine.
+
+Option A: Using Official Installer (Recommended)
+  ☐ Visit: https://www.python.org/downloads/
+  ☐ Download Python 3.8 or newer
+  ☐ Run the installer
+  ☐ Follow on-screen instructions
+  ☐ Restart Terminal after installation
+
+Option B: Using Homebrew (Mac only)
+  ☐ Run: brew install python3
+  ☐ Restart Terminal
+
+Option C: Using Package Managers (Linux)
+  ☐ Ubuntu/Debian: sudo apt-get install python3 python3-pip
+  ☐ Fedora: sudo dnf install python3 python3-pip
+  ☐ Restart Terminal
+
+Verify installation:
+  ☐ Open Terminal
+  ☐ Run: python3 --version
+  ☐ Should show 3.8+ (e.g., Python 3.11.5)
+  ☐ Run: pip3 --version
+  ☐ Should show a version number
+
+═════════════════════════════════════════════════════════════════════
+
+STEP 3: PREPARE THE PACKAGE
+═════════════════════════════════════════════════════════════════════
+
+  ☐ Extract rockmount-voice-engine.zip to your desired location
+     Example: ~/Desktop/rockmount-voice-engine/
+
+  ☐ Open Terminal
+
+  ☐ Navigate to the directory:
+     cd ~/Desktop/rockmount-voice-engine
+     (or wherever you extracted it)
+
+  ☐ Verify files exist:
+     ls -la
+     Should show: setup.sh, start.sh, package.json, app/, lib/, etc.
+
+═════════════════════════════════════════════════════════════════════
+
+STEP 4: RUN SETUP
+═════════════════════════════════════════════════════════════════════
+
+  ☐ In Terminal, run:
+     ./setup.sh
+
+  ☐ The script will:
+     • Check for Node.js ✓
+     • Check for Python 3 ✓
+     • Install npm dependencies (2-3 minutes)
+     • Install Python packages
+     • Create configuration files
+     • Set up everything automatically
+
+  ☐ Wait for "✓ Setup Complete!" message
+
+═════════════════════════════════════════════════════════════════════
+
+STEP 5: START THE APPLICATION
+═════════════════════════════════════════════════════════════════════
+
+  ☐ In Terminal, run:
+     ./start.sh
+
+  ☐ Wait for message: "Ready in XXXms"
+
+  ☐ Open your browser to:
+     http://localhost:4000
+
+  ☐ You should see the RockMount Voice Engine dashboard
+
+═════════════════════════════════════════════════════════════════════
+
+STEP 6: TEST THE APPLICATION
+═════════════════════════════════════════════════════════════════════
+
+  ☐ Upload a small audio file (MP3, WAV, M4A, OGG, or FLAC)
+
+  ☐ Watch the progress bar as it transcribes
+
+  ☐ See the transcription result appear
+
+  ☐ Verify history is saved
+
+═════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING
+═════════════════════════════════════════════════════════════════════
+
+Problem: "node: command not found"
+Solution:
+  ☐ Node.js is not installed or not in PATH
+  ☐ Install Node.js from https://nodejs.org/
+  ☐ Restart Terminal completely
+  ☐ Run: node --version to verify
+
+Problem: "python3: command not found"
+Solution:
+  ☐ Python is not installed or not in PATH
+  ☐ Install Python from https://www.python.org/
+  ☐ Restart Terminal completely
+  ☐ Run: python3 --version to verify
+
+Problem: Permission denied when running setup.sh
+Solution:
+  ☐ Run: chmod +x setup.sh
+  ☐ Then run: ./setup.sh
+
+Problem: "Port 4000 already in use"
+Solution:
+  ☐ Another application is using port 4000
+  ☐ Close other applications
+  ☐ Or the system will automatically try ports 4001-4009
+
+Problem: First transcription is very slow
+Solution:
+  ☐ Normal! The AI model downloads on first use (~500MB)
+  ☐ This only happens once
+  ☐ Subsequent transcriptions are instant
+  ☐ The model is cached for future use
+
+Problem: "ModuleNotFoundError" for faster-whisper
+Solution:
+  ☐ Python package installation may have issues
+  ☐ Run manually: pip3 install faster-whisper
+  ☐ Then try again
+
+═════════════════════════════════════════════════════════════════════
+
+WHAT IF SOMETHING GOES WRONG?
+═════════════════════════════════════════════════════════════════════
+
+If setup fails:
+  ☐ Delete the node_modules folder: rm -rf node_modules
+  ☐ Delete .next folder: rm -rf .next
+  ☐ Run setup.sh again
+
+If the app won't start:
+  ☐ Stop the server (Ctrl+C)
+  ☐ Delete .next folder: rm -rf .next
+  ☐ Run start.sh again
+
+If transcription fails:
+  ☐ Check Terminal for error messages
+  ☐ Ensure you have 4GB RAM free
+  ☐ Try a smaller audio file first
+  ☐ Verify the audio file format is supported
+
+═════════════════════════════════════════════════════════════════════
+
+QUICK REFERENCE COMMANDS
+═════════════════════════════════════════════════════════════════════
+
+Navigate to folder:
+  cd ~/Desktop/rockmount-voice-engine
+
+Run setup (first time only):
+  ./setup.sh
+
+Start the app:
+  ./start.sh
+
+Stop the app:
+  Press Ctrl+C in Terminal
+
+Delete cache and rebuild:
+  rm -rf .next node_modules && ./setup.sh
+
+Check Node.js version:
+  node --version
+
+Check Python version:
+  python3 --version
+
+═════════════════════════════════════════════════════════════════════
+
+READY TO START?
+═════════════════════════════════════════════════════════════════════
+
+Once you've completed the checklist above:
+
+1. Open Terminal
+2. Navigate to the rockmount-voice-engine folder
+3. Run: ./setup.sh (wait for completion)
+4. Run: ./start.sh (starts the server)
+5. Open: http://localhost:4000 in your browser
+6. Upload an audio file to test
+
+That's it! Everything else happens automatically.
+
+Questions? See SETUP_INSTRUCTIONS.md for more details.
+
+═════════════════════════════════════════════════════════════════════
+              Ready to transcribe! Good luck! 🎙️
+═════════════════════════════════════════════════════════════════════
