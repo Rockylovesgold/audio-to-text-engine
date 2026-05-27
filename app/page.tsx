@@ -243,11 +243,11 @@ export default function Home() {
           {/* Upload Zone */}
           <div style={{ marginBottom: '60px', animation: 'fadeIn 0.8s var(--ease)' }}>
             <UploadZone
-              onUpload={(file: File) => {
+              onUpload={async (file: File) => {
                 if (isBatchMode) {
-                  handleBatchUpload([file])
+                  await handleBatchUpload([file])
                 } else {
-                  handleUpload(file)
+                  await handleUpload(file)
                 }
               }}
               isLoading={isLoading}
