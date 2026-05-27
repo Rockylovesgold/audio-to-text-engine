@@ -4,46 +4,22 @@ export interface TranscriptionResult {
   language: string
 }
 
-function getMimeType(filename: string): string {
-  const ext = filename.toLowerCase().split('.').pop() || 'mp3'
-  const mimeTypes: { [key: string]: string } = {
-    'mp3': 'audio/mpeg',
-    'wav': 'audio/wav',
-    'm4a': 'audio/mp4',
-    'ogg': 'audio/ogg',
-    'flac': 'audio/flac',
-  }
-  return mimeTypes[ext] || 'audio/mpeg'
-}
-
 export async function transcribeAudio(audioBuffer: Buffer, filename: string = 'audio.mp3'): Promise<TranscriptionResult> {
-  const apiKey = process.env.NVIDIA_API_KEY || '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'
-
-  if (!apiKey) {
-    throw new Error('NVIDIA_API_KEY not configured')
-  }
-
   try {
     console.log(`[Transcribe] Starting transcription for ${filename}`)
 
-    // Create FormData with audio file - detect MIME type from filename
-    const formData = new FormData()
-    const mimeType = getMimeType(filename)
-    const blob = new Blob([new Uint8Array(audioBuffer)], { type: mimeType })
-    formData.append('audio', blob, filename)
-
-    // Call NVIDIA NIM API with timeout (Vercel timeout: 60s default, 900s max)
+    // Use Hugging Face free Inference API for ASR
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 50000) // 50s timeout
 
     const response = await fetch(
-      'https://ai.api.nvidia.com/v1/asr/nvidia/parakeet-ctc-1.1b-asr',
+      'https://api-inference.huggingface.co/models/openai/whisper-base',
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/octet-stream',
         },
-        body: formData,
+        body: audioBuffer,
         signal: controller.signal,
       }
     )
@@ -51,21 +27,18 @@ export async function transcribeAudio(audioBuffer: Buffer, filename: string = 'a
 
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`)
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`)
     }
 
     const data = await response.json() as any
 
-    // Handle NVIDIA API response format
+    // Parse Hugging Face Whisper response
     let transcribedText = ''
-    let duration = 0
 
-    if (data.result?.transcripts?.[0]?.transcript) {
-      transcribedText = data.result.transcripts[0].transcript
-      duration = data.result?.metadata?.duration || 0
-    } else if (data.transcript) {
-      transcribedText = data.transcript
-      duration = data.duration || 0
+    if (data.text) {
+      transcribedText = data.text
+    } else if (data[0]?.text) {
+      transcribedText = data[0].text
     } else if (typeof data === 'string') {
       transcribedText = data
     }
@@ -78,7 +51,7 @@ export async function transcribeAudio(audioBuffer: Buffer, filename: string = 'a
 
     return {
       text: transcribedText.trim(),
-      duration: Math.round(duration),
+      duration: Math.ceil(audioBuffer.length / 32000), // Estimate from buffer size
       language: 'en',
     }
   } catch (error) {
