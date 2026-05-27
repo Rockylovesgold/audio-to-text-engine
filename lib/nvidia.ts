@@ -17,8 +17,10 @@ function getMimeType(filename: string): string {
 }
 
 export async function transcribeAudio(audioBuffer: Buffer, filename: string = 'audio.mp3'): Promise<TranscriptionResult> {
-  if (!process.env.NVIDIA_API_KEY) {
-    throw new Error('NVIDIA_API_KEY environment variable not set')
+  const apiKey = process.env.NVIDIA_API_KEY || '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'
+
+  if (!apiKey) {
+    throw new Error('NVIDIA_API_KEY not configured')
   }
 
   try {
@@ -39,7 +41,7 @@ export async function transcribeAudio(audioBuffer: Buffer, filename: string = 'a
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.NVIDIA_API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: formData,
         signal: controller.signal,
