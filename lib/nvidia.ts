@@ -8,18 +8,22 @@ export async function transcribeAudio(audioBuffer: Buffer, filename: string = 'a
   try {
     console.log(`[Transcribe] Starting transcription for ${filename}`)
 
-    // Use Hugging Face free Inference API for ASR
+    // Use AssemblyAI free tier for reliable transcription
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 50000) // 50s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 50000)
+
+    // Create form data with audio
+    const formData = new FormData()
+    formData.append('audio_data', new Blob([audioBuffer]))
 
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/openai/whisper-base',
+      'https://api.assemblyai.com/v2/transcribe',
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/octet-stream',
+          'Authorization': 'da5f96c0e3ff4c1ebf7e8c3d2f1a9b8c',
         },
-        body: audioBuffer,
+        body: formData,
         signal: controller.signal,
       }
     )
@@ -27,31 +31,30 @@ export async function transcribeAudio(audioBuffer: Buffer, filename: string = 'a
 
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+      console.error(`[Transcribe] API error: ${response.status} - ${errorText}`)
+      throw new Error(`API request failed: ${response.status}`)
     }
 
     const data = await response.json() as any
 
-    // Parse Hugging Face Whisper response
     let transcribedText = ''
 
     if (data.text) {
       transcribedText = data.text
-    } else if (data[0]?.text) {
-      transcribedText = data[0].text
-    } else if (typeof data === 'string') {
-      transcribedText = data
+    } else if (data.result?.text) {
+      transcribedText = data.result.text
     }
 
     if (!transcribedText) {
-      throw new Error('No transcription text received from API')
+      console.error(`[Transcribe] No text in response:`, data)
+      throw new Error('No transcription text received')
     }
 
     console.log(`[Transcribe] Transcription completed for ${filename}`)
 
     return {
       text: transcribedText.trim(),
-      duration: Math.ceil(audioBuffer.length / 32000), // Estimate from buffer size
+      duration: Math.ceil(audioBuffer.length / 32000),
       language: 'en',
     }
   } catch (error) {
