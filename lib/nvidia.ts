@@ -14,7 +14,7 @@ export async function transcribeAudio(audioBuffer: Buffer, filename: string = 'a
 
     // Create FormData with audio file
     const formData = new FormData()
-    const blob = new Blob([audioBuffer], { type: 'audio/mpeg' })
+    const blob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/mpeg' })
     formData.append('audio', blob, filename)
 
     // Call NVIDIA NIM API
